@@ -1,6 +1,6 @@
 clear; close all;
 
-src_path = "C:\Users\andre\OneDrive - Universidade de Lisboa\Documentos\MEIC\2a3p\CV\Project\Crowd_PETS09\S2\L1\Time_12-34\View_001";
+src_path = "C:\Users\david\Documents\MATLAB\PROJ\View_001";
 
 % imgDs = imageDatastore(img_folder_path);
 % imgDsGray = imgDs.transform(@(x) rgb2gray(x));
@@ -21,7 +21,7 @@ end
 subset = reshape(subset, sizex, sizey, 30);
 background = median(subset, 3);
 
-contrastTh = 0.15;
+contrastTh = 0.25;
 minArea = 500;
 
 for frame=1:nimgs
@@ -29,16 +29,13 @@ for frame=1:nimgs
     img = imread(src_path + "\frame_"+fullnum+".jpg");
 
     imgBW = rgb2gray(img);
+    
+    D = (double(imgBW) - double(background))./double(background);
 
     imgContrast = zeros(sizex, sizey);
-    for i=1:sizex
-        for j=1:sizey
-            contrast = (double(imgBW(i, j)) - double(background(i, j))) / double(background(i, j));
-            if (contrast > contrastTh) || (contrast < -contrastTh)
-                imgContrast(i, j) = 255;
-            end
-        end
-    end
+    imgContrast(find(D>contrastTh)) = 255;
+    imgContrast(find(D<-contrastTh)) = 255;
+
     figure(1);
     imgShapes = medfilt2(imgContrast,[8 8]);
 
