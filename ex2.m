@@ -1,6 +1,6 @@
 clear; close all;
 
-src_path = "C:\Users\david\Documents\MATLAB\PROJ\View_001";
+src_path = "..\View_001";
 
 % imgDs = imageDatastore(img_folder_path);
 % imgDsGray = imgDs.transform(@(x) rgb2gray(x));
@@ -57,7 +57,7 @@ for frame=1:nimgs
                 'linewidth',2);
         end
     end
-
+    set(gcf,'position',[100,20,900,900])
     subplot(2,2,2); imshow(imgBW);
     subplot(2,2,3); imshow(imgContrast);
     subplot(2,2,4); imshow(imgShapes);

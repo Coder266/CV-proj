@@ -9,16 +9,11 @@
 %     Comparar o IOU com os objetos existentes;
 %     Se der match, adicionar à struct do objeto;
 
-% objList=[]
-% obj1.id = 1;
-% obj1.pos = [1 1];
-% obj2.id = 1;
-% obj2.pos = [1 1];
-% objList = [obj1 obj2]
+import ObjectRegion;
 
 clear; close all;
 
-src_path = "C:\Users\david\Documents\MATLAB\PROJ\View_001";
+src_path = "..\View_001";
 
 % imgDs = imageDatastore(img_folder_path);
 % imgDsGray = imgDs.transform(@(x) rgb2gray(x));
@@ -43,6 +38,7 @@ contrastTh = 0.25;
 minArea = 500;
 
 objList = [];
+objCount = 0;
 
 for frame=1:nimgs
     fullnum = compose("%04d", frame-1);
@@ -53,8 +49,8 @@ for frame=1:nimgs
     D = (double(imgBW) - double(background))./double(background);
 
     imgContrast = zeros(sizex, sizey);
-    imgContrast(find(D>contrastTh)) = 255;
-    imgContrast(find(D<-contrastTh)) = 255;
+    imgContrast(D>contrastTh) = 255;
+    imgContrast(D<-contrastTh) = 255;
 
     figure(1);
     imgShapes = medfilt2(imgContrast,[8 8]);
@@ -65,24 +61,30 @@ for frame=1:nimgs
     
     subplot(2,2,1); imshow(img);
     regnum = length(inds);
+    frameObjs.objs = [];
     if regnum
         for j=1:regnum
             [lin, col]= find(lb == inds(j));
             upLPoint = min([lin col]);
             dWindow  = max([lin col]) - upLPoint + 1;
            
-
             subplot(2,2,1);
             rectangle('Position',[fliplr(upLPoint) fliplr(dWindow)],'EdgeColor',[1 1 0],...
                 'linewidth',2);
+   
+            obj = ObjectRegion(objCount+1, regionProps(j).Centroid,fliplr(dWindow)); 
+            objCount = objCount+1;
+            frameObjs.objs = [frameObjs.objs obj];
         end
+        objList = [objList frameObjs];
     end
-
+    
     subplot(2,2,2); imshow(imgBW);
     subplot(2,2,3); imshow(imgContrast);
     subplot(2,2,4); imshow(imgShapes);
 
     %Tratamento de Objetos
+    
     
 
 
