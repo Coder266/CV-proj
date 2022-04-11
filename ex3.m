@@ -9,11 +9,12 @@
 %     Comparar o IOU com os objetos existentes;
 %     Se der match, adicionar à struct do objeto;
 
-import ObjectRegion;
+import ObjectRegion.*;
 
 clear; close all;
+set(gcf,'position',[100,20,900,900]);
 
-src_path = "..\View_001";
+src_path = "C:\Users\andre\OneDrive - Universidade de Lisboa\Documentos\MEIC\2a3p\CV\Project\Crowd_PETS09\S2\L1\Time_12-34\View_001";
 
 % imgDs = imageDatastore(img_folder_path);
 % imgDsGray = imgDs.transform(@(x) rgb2gray(x));
@@ -59,7 +60,8 @@ for frame=1:nimgs
     regionProps = regionprops(lb,'area','FilledImage','Centroid');
     inds = find([regionProps.Area] > minArea);
     
-    subplot(2,2,1); imshow(img);
+%     subplot(2,2,1);
+    imshow(img);
     regnum = length(inds);
     frameObjs.objs = [];
     if regnum
@@ -68,20 +70,34 @@ for frame=1:nimgs
             upLPoint = min([lin col]);
             dWindow  = max([lin col]) - upLPoint + 1;
            
-            subplot(2,2,1);
+%             subplot(2,2,1);
             rectangle('Position',[fliplr(upLPoint) fliplr(dWindow)],'EdgeColor',[1 1 0],...
                 'linewidth',2);
    
-            obj = ObjectRegion(objCount+1, regionProps(j).Centroid,fliplr(dWindow)); 
-            objCount = objCount+1;
+            obj = ObjectRegion(0, regionProps(inds(j)).Centroid,fliplr(dWindow));
+            if frame > 1
+                [M,I] = max(obj.findMatches(objList(frame-1).objs));
+                if M > 0.15
+                    obj = obj.setId(objList(frame-1).objs(I).id);
+                else
+                    objCount = objCount+1;
+                    obj = obj.setId(objCount);
+                end
+            else
+                objCount = objCount+1;
+                obj = obj.setId(objCount);
+            end
+            
             frameObjs.objs = [frameObjs.objs obj];
+
+            text(upLPoint(2), upLPoint(1), int2str(obj.id),'Color','blue','FontSize',14);
         end
         objList = [objList frameObjs];
     end
     
-    subplot(2,2,2); imshow(imgBW);
-    subplot(2,2,3); imshow(imgContrast);
-    subplot(2,2,4); imshow(imgShapes);
+%     subplot(2,2,2); imshow(imgBW);
+%     subplot(2,2,3); imshow(imgContrast);
+%     subplot(2,2,4); imshow(imgShapes);
 
     %Tratamento de Objetos
     
