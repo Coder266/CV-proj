@@ -108,6 +108,7 @@ for frame_idx=1:nimgs
                             % if the group is not empty add it to objs
                             if ~group.isEmpty()
                                 frame.objs{end+1} = group;
+                                % TODO add pos to group
                             end
                         else
                             % create new objs for each obj (TODO get old objs

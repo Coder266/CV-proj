@@ -39,6 +39,7 @@ classdef Group < ObjectInterface
         end
 
         function drawRectangle(group)
+            % TODO draw individual rectangles
             ids = group.getId();
             rectangle('Position', group.posList{end},'EdgeColor',[1 1 0], 'linewidth',2);
             text(group.posList{end}(1), group.posList{end}(2), int2str(ids),'Color','blue','FontSize',14);

@@ -25,6 +25,7 @@ classdef ObjectInterface < handle
         
         function diff = matchDiff(obj, pos, frame)
             % TODO use size, not only pos
+            % TODO save frame of each pos?
             if length(obj.posList) == 1
                 diff = sqrt(sum((obj.posList{end}(1:2) - pos(1:2)).^2));
             else
