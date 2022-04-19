@@ -10,7 +10,7 @@ figure(1);
 hold on;
 
 % img info
-src_path = "C:\Users\andre\OneDrive - Universidade de Lisboa\Documentos\MEIC\2a3p\CV\Project\Crowd_PETS09\S2\L1\Time_12-34\View_001";
+src_path = "..\View_001";
 nimgs = length(dir(src_path + '/*.jpg'));
 [sizex, sizey, ~] = size(imread(src_path + "\frame_0000.jpg"));
 

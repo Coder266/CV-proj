@@ -1,6 +1,6 @@
 clear; close all;
 
-img_folder_path = "C:\Users\andre\OneDrive - Universidade de Lisboa\Documentos\MEIC\2a3p\CV\Project\Crowd_PETS09\S2\L1\Time_12-34\View_001";
+img_folder_path = "..\View_001";
 
 imgDs = imageDatastore(img_folder_path);
 imgDsGray = imgDs.transform(@(x) rgb2gray(x));
