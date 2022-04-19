@@ -2,6 +2,7 @@
 import get_background.*
 import get_shapes_img.*
 import get_blobs.*
+import Heatmap
 
 % setup
 clear; close all;
@@ -10,7 +11,7 @@ figure(1);
 hold on;
 
 % img info
-src_path = "C:\Users\andre\OneDrive - Universidade de Lisboa\Documentos\MEIC\2a3p\CV\Project\Crowd_PETS09\S2\L1\Time_12-34\View_001";
+src_path = "..\View_001";
 nimgs = length(dir(src_path + '/*.jpg'));
 [sizex, sizey, ~] = size(imread(src_path + "\frame_0000.jpg"));
 
@@ -27,6 +28,15 @@ matchingTh = 0.15;
 
 objList = [];
 idCounter = 1;
+
+%heatmap
+heatmap = Heatmap(sizex, sizey, 100);
+
+%video
+vid = VideoWriter('video.mp4', 'MPEG-4');
+open(vid);
+heatvid = VideoWriter('heatmap.mp4', 'MPEG-4');
+open(heatvid);
 
 for frame_idx=1:nimgs
     % get image
@@ -61,6 +71,7 @@ for frame_idx=1:nimgs
 
         % matching
         for blob_idx=1:num_blobs
+                
             if ~any(remaining_blob_idx == blob_idx)
                 continue;
             end
@@ -152,10 +163,20 @@ for frame_idx=1:nimgs
     objList = [objList frame];
 
     % show img with rectangles
-    imshow(img);
+    
+    figure(1),imshow(img);
     for i=1:length(frame.objs)
         frame.objs{i}.drawRectangle();
+        
+        currPos = frame.objs{i}.getPos;
+        heatmap = heatmap.addPos(currPos);
     end
-%     pause(0.1)
-    pause
+    %f = getframe(1);
+    %writeVideo(vid, frame2im(f));
+    pause(0.1);
+    
+    %writeVideo(heatvid, heatmap.getHeatmap);
+    %pause
 end
+
+close(vid);

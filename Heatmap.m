@@ -4,47 +4,65 @@ classdef Heatmap
     
     properties
         matrix
-        g = 100
+        sizex
+        sizey
+        g
+        h
     end
     
     methods
-        function obj = Heatmap(width,height)
+        function obj = Heatmap(width,height, distance)
             %HEATMAP Construct an instance of this class
             %   Detailed explanation goes here
-            obj.matrix = zeros(width, height);
+            obj.sizex = width;
+            obj.sizey = height;
+            obj.g = distance;
+            obj.h = fspecial('gaussian', [2*obj.g+1 2*obj.g+1],obj.g/5);
+            obj.matrix = zeros(width+2*obj.g, height+2*obj.g);
         end
         
-        function outputArg = method1(obj,inputArg)
-            %METHOD1 Summary of this method goes here
-            %   Detailed explanation goes here
-            outputArg = obj.Property1 + inputArg;
+        function obj = swapManhattan(obj)
+            %ADDOCURRENCE Adds an occurrence to the heatmap
+            %   Detailed explanation goes here                       
+            obj.h = zeros(2*obj.g+1, 2*obj.g+1);
+            for x = 1:2*obj.g+1
+                for y = 1:2*obj.g+1
+                    obj.h(x, y) = obj.g - (abs(x-obj.g-1) + abs(y-obj.g-1));
+                end
+            end
+            obj.h(obj.h<0) = 0;
         end
         
         function obj = addOccurrence(obj, x,y)
             %ADDOCURRENCE Adds an occurrence to the heatmap
-            %   Detailed explanation goes here
-            [szx szy] = size(obj.matrix);
-            h = fspecial('gaussian', [2*obj.g+1 2*obj.g+1], 20);
-            
-            if x<obj.g
-                h = h(obj.g-x:2*obj.g+1, 1:2*obj.g+1);
-            end
-            
-            if y<obj.g
-                h = h(obj.g-x:2*obj.g+1, 1:2*obj.g+1);
-            end
-            
-            
-            
-            obj.matrix(x-obj.g:x+obj.g, y-obj.g:y+obj.g) = obj.matrix(x-obj.g:x+obj.g, y-obj.g:y+obj.g) + h;
+            %   Detailed explanation goes here                       
+            obj.matrix(x:x+2*obj.g, y:y+2*obj.g) = obj.matrix(x:x+2*obj.g, y:y+2*obj.g) + obj.h;
+        end
+        
+        function obj = addPos(obj, pos)
+            %ADDOCURRENCE Adds a rectangle position to the heatmap
+            %   Detailed explanation goes here     
+            x = int16(pos(2)+pos(4)/2);
+            y = int16(pos(1)+pos(3)/2);
+            obj.matrix(x:x+2*obj.g, y:y+2*obj.g) = obj.matrix(x:x+2*obj.g, y:y+2*obj.g) + obj.h;
+        end
+        
+        function map = getHeatmap(obj)
+            mat = obj.matrix(obj.g+1:obj.g+obj.sizex, obj.g+1:obj.g+obj.sizey);
+            scaled = rescale(mat, 0, 1);
+            gray = uint8(floor(scaled * 255));
+            map = jet(255);
+            rgb = ind2rgb(gray, map);
+            map = rgb;
         end
         
         function plotHeatmap(obj)
             %PLOTHEATMAP Plots the contained heatmap
-            scaled = rescale(obj.matrix, 0, 1);
-            GrayIndex = uint8(floor(scaled * 255));
+            mat = obj.matrix(obj.g+1:obj.g+obj.sizex, obj.g+1:obj.g+obj.sizey);
+            scaled = rescale(mat, 0, 1);
+            gray = uint8(floor(scaled * 255));
             map = jet(255);
-            rgb = ind2rgb(GrayIndex, map);
+            rgb = ind2rgb(gray, map);
             figure, imshow(rgb);
         end
     end
