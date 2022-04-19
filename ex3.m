@@ -171,11 +171,11 @@ for frame_idx=1:nimgs
         currPos = frame.objs{i}.getPos;
         heatmap = heatmap.addPos(currPos);
     end
-    %f = getframe(1);
-    %writeVideo(vid, frame2im(f));
+    f = getframe(1);
+    writeVideo(vid, frame2im(f));
     pause(0.1);
     
-    %writeVideo(heatvid, heatmap.getHeatmap);
+    writeVideo(heatvid, heatmap.getHeatmap);
     %pause
 end
 
