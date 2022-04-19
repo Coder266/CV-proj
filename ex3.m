@@ -156,6 +156,6 @@ for frame_idx=1:nimgs
     for i=1:length(frame.objs)
         frame.objs{i}.drawRectangle();
     end
-%     pause(0.1)
-    pause
+    pause(0.0001)
+    %pause
 end
