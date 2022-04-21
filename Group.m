@@ -23,7 +23,7 @@ classdef Group < ObjectInterface
             for i=1:length(blobs)
                 diff = zeros(1, length(group.elements));
                 for j=1:length(group.elements)
-                    diff(j) = group.elements{j}.matchDiff(blobs(i).pos);%, frame);
+                    diff(j) = group.elements{j}.matchDiff(blobs(i).pos, frame);
                 end
                 [~, I] = min(diff);
                 objs{end+1} = group.elements{I};

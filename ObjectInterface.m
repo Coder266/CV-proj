@@ -28,7 +28,7 @@ classdef ObjectInterface < handle
         
         %This function returns the expected difference, in pixels, between
         %the same object in two different frames
-        function diff = matchDiff(obj, pos)
+        function diff = matchDiff(obj, pos, frame)
             % TODO: consider difference of frames when calculating the
             % expected position
             if length(obj.posList) == 1
@@ -36,8 +36,8 @@ classdef ObjectInterface < handle
             else
                 range = min(length(obj.posList), 2); %treshold to which consider previous movement
                 
-                vel = (obj.posList{end}(1:2) - obj.posList{end-range+1}(1:2)) / range;
-                expectedPos = obj.posList{end}(1:2) + vel * ( obj.frameList(end) - obj.frameList(end-1));
+                vel = (obj.posList{end}(1:2) - obj.posList{end-range+1}(1:2)) / (obj.frameList(end) - obj.frameList(end-range+1));
+                expectedPos = obj.posList{end}(1:2) + vel * (frame - obj.frameList(end));
                 diff = sqrt(sum((expectedPos - pos(1:2)).^2));
             end
         end
