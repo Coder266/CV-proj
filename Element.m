@@ -1,23 +1,31 @@
-classdef Element < ObjectInterface
+classdef Element < handle
     properties
         id
+        posList
+        frameList
     end
 
     methods
         function obj = Element(id, pos, frame)
-            obj@ObjectInterface(pos, frame);
+            obj.posList{1} = pos;
+            obj.frameList = frame;
             obj.id = id;
         end
 
-        function drawRectangle(obj)
-            rectangle('Position', obj.posList{end},'EdgeColor',[1 1 0], 'linewidth',2);
-            text(obj.posList{end}(1), obj.posList{end}(2), int2str(obj.id),'Color','blue','FontSize',14);
+        function obj = addPos(obj, pos, frame)
+            obj.posList{end+1} = pos;
+            obj.frameList = [obj.frameList frame];
         end
 
-        function id = getId(obj)
-            id = obj.id;
+        function predicted_pos = getPredictedPos(obj, frame)
+            if length(obj.posList) == 1
+                predicted_pos = obj.posList{end};
+            else
+                range = min(length(obj.posList), 5);
+                vel = (obj.posList{end}(1:2) - obj.posList{end-range+1}(1:2)) / (obj.frameList(end) - obj.frameList(end-range+1));
+                predicted_xy = obj.posList{end}(1:2) + vel * (frame - obj.frameList(end));
+                predicted_pos = [predicted_xy obj.posList{end}(3:4)];
+            end
         end
     end
-
 end
-
