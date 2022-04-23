@@ -7,6 +7,9 @@ function imgShapes = get_shapes_img(img, background, contrastTh, medianSize)
     imgContrast = zeros(sizex, sizey);
     imgContrast(D>contrastTh) = 255;
     imgContrast(D<-contrastTh) = 255;
-
-    imgShapes = medfilt2(imgContrast,[medianSize medianSize]);
+    
+    se1 = strel('rectangle', [10 5]);
+    
+    imgShapes = imclose(imgContrast, se1);
+    imgShapes = medfilt2(imgShapes,[medianSize medianSize]);
 end
