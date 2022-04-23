@@ -45,6 +45,12 @@ classdef Group < ObjectInterface
             text(group.posList{end}(1), group.posList{end}(2), int2str(ids),'Color','blue','FontSize',14);
         end
 
+        function imgOut = drawRectangleImg(group, imgIn)
+            ids = group.getId();
+            imgOut = insertShape(imgIn, 'Rectangle', group.posList{end});
+            imgOut = insertText(imgOut, [group.posList{end}(1) group.posList{end}(2)], int2str(ids));
+        end
+        
         function bool = isEmpty(group)
             bool = isempty(group.elements);
         end

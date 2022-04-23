@@ -6,6 +6,7 @@ classdef ObjectInterface < handle
     end
     methods (Abstract)
         drawRectangle
+        drawRectangleImg
         getId
     end
 
