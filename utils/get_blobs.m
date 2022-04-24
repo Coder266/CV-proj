@@ -13,9 +13,11 @@ function blobs = get_blobs(imgShapes, minArea)
             upLPoint = min([lin col]);
             dWindow  = max([lin col]) - upLPoint + 1;
    
-            blob.pos = [fliplr(upLPoint), fliplr(dWindow)];
-            
-            blobs = [blobs blob];
+            if dWindow(1) > dWindow(2)
+                blob = [fliplr(upLPoint), fliplr(dWindow)];
+                
+                blobs = [blobs; blob];
+            end
         end
     end
 end

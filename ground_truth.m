@@ -1,7 +1,7 @@
 clear; close all;
 
-img_folder_path = "C:\Users\david\Documents\MATLAB\PROJ\View_001";
-ground_truth_path = "C:\Users\david\Documents\MATLAB\PROJ\PETS2009-S2L1.xml";
+img_folder_path = "..\View_001";
+ground_truth_path = "PETS2009-S2L1.xml";
 
 imgDs = imageDatastore(img_folder_path);
 ground_truth_object = readstruct(ground_truth_path);
