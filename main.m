@@ -27,26 +27,26 @@ subset_size = 30;
 % options
 saveVideo = false;
 videoName = 'video';
-showGT = true;
+showGT = false;
 showBBox = true;
-showIds = true;
+showIds = false;
 
-showMarkers = true;
+showMarkers = false;
 num_markers = 10;
 
 % heatmap params
-showHeatmap = true;
+showHeatmap = false;
 % isHeatmapDynamic: false -> Static
 isHeatmapDynamic = false;
 % isHeatmapManhattan: false -> Euclidean
-isHeatmapManhattan = true;
+isHeatmapManhattan = false;
 heatmapStd = 100;
 
 % optic flow
-showOptflow = true;
+showOptflow = false;
 
 % evaluation
-printMetrics = true;
+printMetrics = false;
 
 debug = false;
 
