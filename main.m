@@ -9,16 +9,26 @@ figure(1);
 hold on;
 
 % img info
+ground_truth_path = "PETS2009-S2L1.xml";
 src_path = "..\View_001";
 nimgs = length(dir(src_path + '/*.jpg'));
 [sizex, sizey, ~] = size(imread(src_path + "\frame_0000.jpg"));
 
+% global params
+contrastTh = 0.25;
+minArea = 350;
+medianSize = 12;
+matchingTh = 0.15;
+edgeDistanceTh = 50;
+
 % background
 subset_size = 30;
-background = get_background(src_path, subset_size);
 
-% params
-showBBox = false;
+% options
+saveVideo = false;
+videoName = 'video';
+showGT = false;
+showBBox = true;
 showIds = false;
 
 showMarkers = false;
@@ -32,22 +42,33 @@ isHeatmapDynamic = false;
 isHeatmapManhattan = true;
 heatmapStd = 100;
 
-% global params
-contrastTh = 0.25;
-minArea = 350;
-medianSize = 12;
-matchingTh = 0.15;
-edgeDistanceTh = 50;
-
-%OPTFLOW
+% optic flow
 showOptflow = false;
-
-if showOptflow
-    opt = OpticalFlow(sizex, sizey);
-end
 
 debug = false;
 
+% setup
+
+% save video
+if saveVideo
+    vid = VideoWriter(['videos/', videoName, '.mp4'], 'MPEG-4');
+    open(vid);
+end
+
+% background
+background = get_background(src_path, subset_size);
+
+% ground truth
+if showGT
+    ground_truth_object = readstruct(ground_truth_path);
+end
+
+% markers
+if showMarkers
+    markers = {};
+end
+
+% heatmap
 if showHeatmap
     heatmap = Heatmap(sizex, sizey, heatmapStd);
     if isHeatmapManhattan
@@ -55,9 +76,11 @@ if showHeatmap
     end
 end
 
-if showMarkers
-    markers = {};
+% optical flow
+if showOptflow
+    opt = OpticalFlow(sizex, sizey);
 end
+
 
 objList = Frame.empty(1, 0);
 hiding = {};
@@ -67,6 +90,11 @@ for frame_idx=1:nimgs
     % get image
     fullnum = compose("%04d", frame_idx-1);
     img = imread(src_path + "\frame_"+fullnum+".jpg");
+
+    % ground truth
+    if showGT
+        img = plot_boundaries(img, ground_truth_object, frame_idx); 
+    end
 
     % get shapes image using contrast
     imgShapes = get_shapes_img(img, background, contrastTh, medianSize);
@@ -130,7 +158,6 @@ for frame_idx=1:nimgs
                                     frame = frame.addObject(objs{l});
                                 end
                             else
-                                % TODO move to function
                                 obj1 = Element(idCounter, blobs(i, :), frame_idx);
                                 idCounter = idCounter + 1;
                                 frame = frame.addObject(obj1);
@@ -239,10 +266,11 @@ for frame_idx=1:nimgs
         end
     end
     
-    %OPTFLOW
+    objList(frame_idx) = frame;
+
+    % opticflow
     
     if showOptflow
-    
         if frame_idx == 1
             opt = opt.hornSchunck(img, img);
         else
@@ -252,10 +280,8 @@ for frame_idx=1:nimgs
         previmg = img;
     end
     
-    
-    
-    objList(frame_idx) = frame;
-    
+    % show images
+
     if showMarkers
         marker_pos = zeros(2, frame.getNumObjs());
     end
@@ -295,5 +321,15 @@ for frame_idx=1:nimgs
         heatmap = heatmap.divide();
     end
 
+    % save video
+
+    if saveVideo
+        writeVideo(vid, frame);
+    end
+
     pause(0.00001);
+end
+
+if saveVideo
+    close(vid);
 end
