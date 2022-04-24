@@ -344,7 +344,11 @@ for frame_idx=1:nimgs
     % save video
 
     if saveVideo
-        writeVideo(vid, img);
+        if showHeatmap
+            writeVideo(vid, heatmap.getHeatmap());
+        else
+            writeVideo(vid, img);
+        end
     end
 
     pause(0.00001);
