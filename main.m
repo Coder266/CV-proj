@@ -18,14 +18,14 @@ subset_size = 30;
 background = get_background(src_path, subset_size);
 
 % params
-showBBox = true;
-showIds = true;
+showBBox = false;
+showIds = false;
 
-showMarkers = true;
+showMarkers = false;
 num_markers = 10;
 
 % heatmap params
-showHeatmap = true;
+showHeatmap = false;
 % isHeatmapDynamic: false -> Static
 isHeatmapDynamic = false;
 % isHeatmapManhattan: false -> Euclidean
@@ -38,6 +38,13 @@ minArea = 350;
 medianSize = 12;
 matchingTh = 0.15;
 edgeDistanceTh = 50;
+
+%OPTFLOW
+showOptflow = false;
+
+if showOptflow
+    opt = OpticalFlow(sizex, sizey);
+end
 
 debug = false;
 
@@ -210,23 +217,6 @@ for frame_idx=1:nimgs
                         continue;
                     end
 
-                    % search groups
-%                     for j=1:num_prev_objs
-%                         if isa(prev_objs{j}, 'Group')
-%                             [hasMatch, obj] = prev_objs{j}.checkMatch(blobs(i, :), matchingTh);
-%                             if hasMatch
-%                                 obj = obj.addPosition(blobs(i, :));
-%                                 frame = frame.addObject(obj);
-% 
-%                                 done=true;
-%                                 break;
-%                             end
-%                         end
-%                     end
-%                     if done
-%                         continue;
-%                     end
-
                     % else create new
                     obj = Element(idCounter, blobs(i, :), frame_idx);
                     idCounter = idCounter + 1;
@@ -248,7 +238,22 @@ for frame_idx=1:nimgs
             end
         end
     end
-
+    
+    %OPTFLOW
+    
+    if showOptflow
+    
+        if frame_idx == 1
+            opt = opt.hornSchunck(img, img);
+        else
+            opt = opt.hornSchunck(previmg, img);
+        end
+        opflow = opticalFlow(opt.u, opt.v);
+        previmg = img;
+    end
+    
+    
+    
     objList(frame_idx) = frame;
     
     if showMarkers
@@ -277,10 +282,13 @@ for frame_idx=1:nimgs
     end
     
     if showHeatmap
-        subplot(2,1,1), imshow(img);
-        subplot(2,1,2), imshow(heatmap.getHeatmap());
+        figure(1), subplot(2,1,1), imshow(img);
+        figure(1), subplot(2,1,2), imshow(heatmap.getHeatmap());
     else
         imshow(img);
+        if showOptflow
+            plot(opflow,'DecimationFactor',[8 8],'ScaleFactor',3);
+        end
     end
     
     if showHeatmap && isHeatmapDynamic
