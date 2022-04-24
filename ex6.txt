@@ -1,0 +1,2 @@
+To implement optical flow in our project, we have tried to implement the Horn-Schunck method, albeit with it's limitations. 
+By using a Sobel kernel to obtain the x and y gradients of the original image, and obtaining the temporal gradient and also the neighbor velocity averages, this method allows us to iteratively solve for the velocity vecotor for each pixel.
