@@ -2,6 +2,8 @@
 import get_background.*
 import get_shapes_img.*
 import get_blobs.*
+import gt_eval.*
+import xml2struct.*;
 
 % setup
 clear; close all;
@@ -14,6 +16,9 @@ src_path = "..\View_001";
 nimgs = length(dir(src_path + '/*.jpg'));
 [sizex, sizey, ~] = size(imread(src_path + "\frame_0000.jpg"));
 
+%ground_truth
+ground_truth_object = xml2struct('PETS2009-S2L1.xml');
+
 % background
 subset_size = 30;
 background = get_background(src_path, subset_size);
@@ -23,6 +28,7 @@ contrastTh = 0.25;
 minArea = 200;
 medianSize = 12;
 matchingTh = 0.15;
+total_overlap = 0;
 
 
 objList = [];
@@ -150,7 +156,9 @@ for frame_idx=1:nimgs
     end
 
     objList = [objList frame];
-
+    
+    
+    
     % show img with rectangles
     imshow(img);
     for i=1:length(frame.objs)

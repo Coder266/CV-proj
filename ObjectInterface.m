@@ -38,6 +38,7 @@ classdef ObjectInterface < handle
                 
                 vel = (obj.posList{end}(1:2) - obj.posList{end-range+1}(1:2)) / range;
                 expectedPos = obj.posList{end}(1:2) + vel * ( obj.frameList(end) - obj.frameList(end-1));
+                
                 diff = sqrt(sum((expectedPos - pos(1:2)).^2));
             end
         end
