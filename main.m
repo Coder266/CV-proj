@@ -324,7 +324,7 @@ for frame_idx=1:nimgs
     % save video
 
     if saveVideo
-        writeVideo(vid, frame);
+        writeVideo(vid, img);
     end
 
     pause(0.00001);
