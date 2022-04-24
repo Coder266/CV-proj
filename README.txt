@@ -10,6 +10,9 @@ edgeDistanceTh: The distance from the edges for the tracking algorithm
 
 subset_size: Number of samples used to extract the background
 
+saveVideo: Save the frames as a video, when showing heatmaps only heatmaps are stored
+videoName: Name of the stored video in the video folder
+
 showGT: Show the ground truth
 showBBox: Show the computed bounding boxes
 showIds: Show the ID labels given to the objects
