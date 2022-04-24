@@ -22,3 +22,5 @@ isHeatapManhattan: Toggle between Gaussian and Manhattan heatmap
 heatmapStd: The size influence of each object on the screen
 
 showOptflow: Plot the optical flow plot (mutually exclusive with heatmap) 
+
+printMetrics: Prints the evaluation metrics
