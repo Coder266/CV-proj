@@ -65,6 +65,10 @@ classdef Heatmap
             rgb = ind2rgb(gray, map);
             figure, imshow(rgb);
         end
+
+        function obj = divide(obj)
+            obj.matrix = obj.matrix / 2;
+        end
     end
 end
 

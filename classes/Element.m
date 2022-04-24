@@ -17,11 +17,11 @@ classdef Element < ObjectInterface
             obj.frameList = [obj.frameList frame];
         end
         
-        function img = drawRectangleImg(obj, img, ex)
-            if ismember(ex, [2, 3, 4])
+        function img = drawRectangleImg(obj, img, showBBox, showIds)
+            if showBBox
                 img = insertShape(img, 'Rectangle', obj.posList(end, :));
             end
-            if ex == 4
+            if showIds
                 img = insertText(img, [obj.posList(end, 1) obj.posList(end, 2)], int2str(obj.id));
             end
         end

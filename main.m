@@ -18,18 +18,37 @@ subset_size = 30;
 background = get_background(src_path, subset_size);
 
 % params
-ex = 3;
+showBBox = true;
+showIds = true;
+
+showMarkers = true;
+num_markers = 10;
+
+% heatmap params
+showHeatmap = true;
+% isHeatmapDynamic: false -> Static
+isHeatmapDynamic = false;
+% isHeatmapManhattan: false -> Euclidean
+isHeatmapManhattan = true;
+heatmapStd = 100;
+
+% global params
 contrastTh = 0.25;
 minArea = 350;
 medianSize = 12;
 matchingTh = 0.15;
 edgeDistanceTh = 50;
-heatmapSize = 100;
+
 debug = false;
 
-heatmap = Heatmap(sizex, sizey, heatmapSize);
+if showHeatmap
+    heatmap = Heatmap(sizex, sizey, heatmapStd);
+    if isHeatmapManhattan
+        heatmap = heatmap.swapManhattan();
+    end
+end
 
-if ex == 3
+if showMarkers
     markers = {};
 end
 
@@ -232,33 +251,41 @@ for frame_idx=1:nimgs
 
     objList(frame_idx) = frame;
     
-    % show img with rectangles
-    if ex == 3
+    if showMarkers
         marker_pos = zeros(2, frame.getNumObjs());
     end
 
     for i=1:frame.getNumObjs()
-        img = frame.getObj(i).drawRectangleImg(img, ex);
-        heatmap = heatmap.addPos(frame.getObj(i).getPos());
-        if ex == 3
+        img = frame.getObj(i).drawRectangleImg(img, showBBox, showIds);
+        if showHeatmap
+            heatmap = heatmap.addPos(frame.getObj(i).getPos());
+        end
+        if showMarkers
             obj_pos = frame.getObj(i).getPos();
             pos = [obj_pos(1) + obj_pos(3) / 2, obj_pos(2) + obj_pos(4) / 2];
             marker_pos(:, i) = pos;
         end
     end
-
-    markers{frame_idx} = marker_pos;
     
-    for i=frame_idx:-1:max(frame_idx - 6, 1)
-        for j=1:size(markers{i}, 2)
-            img = insertMarker(img, markers{i}(:, j)');
+    if showMarkers
+        markers{frame_idx} = marker_pos;
+        for i=frame_idx:-1:max(frame_idx - num_markers + 1, 1)
+            for j=1:size(markers{i}, 2)
+                img = insertMarker(img, markers{i}(:, j)');
+            end
         end
     end
     
+    if showHeatmap
+        subplot(2,1,1), imshow(img);
+        subplot(2,1,2), imshow(heatmap.getHeatmap());
+    else
+        imshow(img);
+    end
+    
+    if showHeatmap && isHeatmapDynamic
+        heatmap = heatmap.divide();
+    end
 
-    imshow(img);
-%     subplot(2,1,1), imshow(img);
-%     subplot(2,1,2), imshow(heatmap.getHeatmap());
-
-    pause();
+    pause(0.00001);
 end
