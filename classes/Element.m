@@ -19,7 +19,7 @@ classdef Element < ObjectInterface
         
         function img = drawRectangleImg(obj, img, showBBox, showIds)
             if showBBox
-                img = insertShape(img, 'Rectangle', obj.posList(end, :));
+                img = insertShape(img, 'Rectangle', obj.posList(end, :), 'LineWidth',3);
             end
             if showIds
                 img = insertText(img, [obj.posList(end, 1) obj.posList(end, 2)], int2str(obj.id));

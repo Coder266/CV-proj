@@ -1,7 +1,6 @@
 % imports
 addpath utils
 addpath classes
-import xml2struct.*
 
 % setup
 clear; close all;
@@ -10,21 +9,25 @@ figure(1);
 hold on;
 
 % img info
+ground_truth_path = "PETS2009-S2L1.xml";
 src_path = "..\View_001";
 nimgs = length(dir(src_path + '/*.jpg'));
 [sizex, sizey, ~] = size(imread(src_path + "\frame_0000.jpg"));
 
+% global params
+contrastTh = 0.25;
+minArea = 350;
+medianSize = 12;
+matchingTh = 0.15;
+edgeDistanceTh = 50;
+
 % background
 subset_size = 30;
-background = get_background(src_path, subset_size);
 
-% groundtruth
-ground_truth_object = xml2struct('PETS2009-S2L1.xml');
-metrics = [0 0 0 0 0];
-th = 0.3;
-match_area_vec = [];
-
-% params
+% options
+saveVideo = false;
+videoName = 'video';
+showGT = true;
 showBBox = true;
 showIds = true;
 
@@ -39,15 +42,42 @@ isHeatmapDynamic = false;
 isHeatmapManhattan = true;
 heatmapStd = 100;
 
-% global params
-contrastTh = 0.25;
-minArea = 350;
-medianSize = 12;
-matchingTh = 0.15;
-edgeDistanceTh = 50;
+% optic flow
+showOptflow = true;
+
+% evaluation
+printMetrics = true;
 
 debug = false;
 
+% setup
+
+% save video
+if saveVideo
+    vid = VideoWriter(['videos/', videoName, '.mp4'], 'MPEG-4');
+    open(vid);
+end
+
+% background
+background = get_background(src_path, subset_size);
+
+% metrics
+if printMetrics
+    metrics = [0 0 0 0 0];
+    th = 0.3;
+end
+
+% ground truth
+if showGT || printMetrics
+    ground_truth_object = xml2struct(ground_truth_path);
+end
+
+% markers
+if showMarkers
+    markers = {};
+end
+
+% heatmap
 if showHeatmap
     heatmap = Heatmap(sizex, sizey, heatmapStd);
     if isHeatmapManhattan
@@ -55,9 +85,11 @@ if showHeatmap
     end
 end
 
-if showMarkers
-    markers = {};
+% optical flow
+if showOptflow
+    opt = OpticalFlow(sizex, sizey);
 end
+
 
 objList = Frame.empty(1, 0);
 hiding = {};
@@ -67,6 +99,11 @@ for frame_idx=1:nimgs
     % get image
     fullnum = compose("%04d", frame_idx-1);
     img = imread(src_path + "\frame_"+fullnum+".jpg");
+
+    % ground truth
+    if showGT
+        img = plot_boundaries(img, ground_truth_object, frame_idx); 
+    end
 
     % get shapes image using contrast
     imgShapes = get_shapes_img(img, background, contrastTh, medianSize);
@@ -130,7 +167,6 @@ for frame_idx=1:nimgs
                                     frame = frame.addObject(objs{l});
                                 end
                             else
-                                % TODO move to function
                                 obj1 = Element(idCounter, blobs(i, :), frame_idx);
                                 idCounter = idCounter + 1;
                                 frame = frame.addObject(obj1);
@@ -217,23 +253,6 @@ for frame_idx=1:nimgs
                         continue;
                     end
 
-                    % search groups
-%                     for j=1:num_prev_objs
-%                         if isa(prev_objs{j}, 'Group')
-%                             [hasMatch, obj] = prev_objs{j}.checkMatch(blobs(i, :), matchingTh);
-%                             if hasMatch
-%                                 obj = obj.addPosition(blobs(i, :));
-%                                 frame = frame.addObject(obj);
-% 
-%                                 done=true;
-%                                 break;
-%                             end
-%                         end
-%                     end
-%                     if done
-%                         continue;
-%                     end
-
                     % else create new
                     obj = Element(idCounter, blobs(i, :), frame_idx);
                     idCounter = idCounter + 1;
@@ -255,22 +274,34 @@ for frame_idx=1:nimgs
             end
         end
     end
-
+    
     objList(frame_idx) = frame;
     
-     %Eval -> Compute GT; confusion matrix is [confusion_matrix = [true_positives false_positives ; false_negative 0 ];
-     if frame_idx>1
-         metrics = metrics + gt_eval(ground_truth_object.dataset.frame{1,frame_idx}.objectlist.object, objList(frame_idx).objs , sizex , sizey, th);
-         match_area_vec = [match_area_vec round((metrics(5)/(frame_idx-1)*100)) ];
-         total_obj = sum(metrics, 'all');
-         fprintf('METRICS:\nCorrect detections: %d%%\n', round((metrics(1)/total_obj)*100) );
-         fprintf('Merge detections: %d%%\n',round((metrics(2)/total_obj)*100) );
-         fprintf('False Alarm: %d%%\n',round((metrics(3)/total_obj)*100) );
-         fprintf('Detection Failure: %d%%\n',round((metrics(4)/total_obj)*100) );
-         fprintf('Match Area (IOU): %d%%\n\n\n',round( (metrics(5)/(frame_idx-1)*100) ));
+    %Eval -> Compute GT; confusion matrix is [confusion_matrix = [true_positives false_positives ; false_negative 0 ];	
+     if printMetrics && frame_idx > 1	
+         metrics = metrics + gt_eval(ground_truth_object.dataset.frame{1, frame_idx}.objectlist.object, objList(frame_idx).objs , sizex , sizey, th);	
+         total_obj = sum(metrics, 'all');	
+         fprintf('METRICS:\nCorrect detections: %d%%\n', round((metrics(1)/total_obj)*100) );	
+         fprintf('Merge detections: %d%%\n',round((metrics(2)/total_obj)*100) );	
+         fprintf('False Alarm: %d%%\n',round((metrics(3)/total_obj)*100) );	
+         fprintf('Detection Failure: %d%%\n',round((metrics(4)/total_obj)*100) );	
+         fprintf('Match Area (IOU): %d%%\n\n\n',round( (metrics(5)/(frame_idx-1)*100) ));	
      end
-   
+
+    % opticflow
     
+    if showOptflow
+        if frame_idx == 1
+            opt = opt.hornSchunck(img, img);
+        else
+            opt = opt.hornSchunck(previmg, img);
+        end
+        opflow = opticalFlow(opt.u, opt.v);
+        previmg = img;
+    end
+    
+    % show images
+
     if showMarkers
         marker_pos = zeros(2, frame.getNumObjs());
     end
@@ -297,15 +328,28 @@ for frame_idx=1:nimgs
     end
     
     if showHeatmap
-        subplot(2,1,1), imshow(img);
-        subplot(2,1,2), imshow(heatmap.getHeatmap());
+        figure(1), subplot(2,1,1), imshow(img);
+        figure(1), subplot(2,1,2), imshow(heatmap.getHeatmap());
     else
         imshow(img);
+        if showOptflow
+            plot(opflow,'DecimationFactor',[8 8],'ScaleFactor',3);
+        end
     end
     
     if showHeatmap && isHeatmapDynamic
         heatmap = heatmap.divide();
     end
 
+    % save video
+
+    if saveVideo
+        writeVideo(vid, img);
+    end
+
     pause(0.00001);
+end
+
+if saveVideo
+    close(vid);
 end

@@ -63,7 +63,7 @@ classdef Group < ObjectInterface
         function img = drawRectangleImg(group, img, showBBox, showIds)
             ids = group.getId();
             if showBBox
-                img = insertShape(img, 'Rectangle', group.posList(end, :));
+                img = insertShape(img, 'Rectangle', group.posList(end, :),'LineWidth',3);
             end
             if showIds
                 img = insertText(img, [group.posList(end, 1) group.posList(end, 2)], int2str(ids));
