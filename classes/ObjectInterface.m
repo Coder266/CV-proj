@@ -4,7 +4,7 @@ classdef ObjectInterface < handle
         frameList
     end
 
-    methods(Abstract)
+    methods (Abstract)
         getId
         addPos
         getElements

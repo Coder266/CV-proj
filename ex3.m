@@ -1,7 +1,6 @@
 % imports
-import get_background.*
-import get_shapes_img.*
-import get_blobs.*
+addpath utils
+addpath classes
 
 % setup
 clear; close all;
@@ -24,7 +23,10 @@ minArea = 350;
 medianSize = 12;
 matchingTh = 0.15;
 edgeDistanceTh = 50;
-debug = true;
+heatmapSize = 100;
+debug = false;
+
+heatmap = Heatmap(sizex, sizey, heatmapSize);
 
 objList = Frame.empty(1, 0);
 hiding = {};
@@ -34,7 +36,6 @@ for frame_idx=1:nimgs
     % get image
     fullnum = compose("%04d", frame_idx-1);
     img = imread(src_path + "\frame_"+fullnum+".jpg");
-    imshow(img);
 
     % get shapes image using contrast
     imgShapes = get_shapes_img(img, background, contrastTh, medianSize);
@@ -54,7 +55,6 @@ for frame_idx=1:nimgs
             obj = Element(idCounter, blobs(blob_idx, :), frame_idx);
             idCounter = idCounter + 1;
             frame = frame.addObject(obj);
-            drawRectangle(blobs(blob_idx, :), obj.id, 'yellow');
         end
     else
         prev_objs = objList(frame_idx-1).getObjs();
@@ -94,23 +94,19 @@ for frame_idx=1:nimgs
 
                                 if ~group.isEmpty()
                                     frame = frame.addObject(group);
-                                    drawRectangle(group.getPos(), group.getId(), 'yellow');
                                 end
                                 for l=1:length(objs)
                                     frame = frame.addObject(objs{l});
-                                    drawRectangle(objs{l}.getPos(), objs{l}.getId(), 'yellow'); 
                                 end
                             else
                                 % TODO move to function
                                 obj1 = Element(idCounter, blobs(i, :), frame_idx);
                                 idCounter = idCounter + 1;
                                 frame = frame.addObject(obj1);
-                                drawRectangle(obj1.getPos(), obj1.getId(), 'yellow');
 
                                 obj2 = Element(idCounter, blobs(j, :), frame_idx);
                                 idCounter = idCounter + 1;
                                 frame = frame.addObject(obj2);
-                                drawRectangle(obj2.getPos(), obj2.getId(), 'yellow');
                             end
                         end
                     end
@@ -130,7 +126,6 @@ for frame_idx=1:nimgs
                             cat(2, prev_objs{j}.getElements(), ...
                             prev_objs{k}.getElements()));
                         frame = frame.addObject(group);
-                        drawRectangle(group.getPos(), group.getId(), 'yellow');
                     end
                 end
 
@@ -143,7 +138,6 @@ for frame_idx=1:nimgs
                     obj = prev_objs{j};
                     obj = obj.addPos(blobs(i, :), frame_idx);
                     frame = frame.addObject(obj);
-                    drawRectangle(obj.getPos(), obj.getId(), 'yellow');
                 end
             end
 
@@ -158,7 +152,6 @@ for frame_idx=1:nimgs
                     obj = Element(idCounter, blobs(i, :), frame_idx);
                     idCounter = idCounter + 1;
                     frame = frame.addObject(obj);
-                    drawRectangle(blobs(i, :), obj.getId(), 'yellow');
                 else
                     % check if is inside other blobs
                     done = false;
@@ -181,7 +174,6 @@ for frame_idx=1:nimgs
                             obj = hiding{j};
                             obj = obj.addPos(blobs(i, :), frame_idx);
                             frame = frame.addObject(obj);
-                            drawRectangle(obj.getPos(), obj.getId(), 'yellow');
 
                             done = true;
                             break;
@@ -201,7 +193,6 @@ for frame_idx=1:nimgs
 %                             if hasMatch
 %                                 obj = obj.addPosition(blobs(i, :));
 %                                 frame = frame.addObject(obj);
-%                                 drawRectangle(obj.getPos(), obj.getId(), 'yellow');
 % 
 %                                 done=true;
 %                                 break;
@@ -216,7 +207,6 @@ for frame_idx=1:nimgs
                     obj = Element(idCounter, blobs(i, :), frame_idx);
                     idCounter = idCounter + 1;
                     frame = frame.addObject(obj);
-                    drawRectangle(blobs(blob_idx, :), obj.id, 'yellow');
                 end
             end
         end
@@ -236,6 +226,15 @@ for frame_idx=1:nimgs
     end
 
     objList(frame_idx) = frame;
+    
+    % show img with rectangles
+    for i=1:length(frame.objs)
+        img = frame.getObj(i).drawRectangleImg(img);
+        heatmap = heatmap.addPos(frame.getObj(i).getPos());
+    end
+
+    subplot(2,1,1), imshow(img);
+    subplot(2,1,2), imshow(heatmap.getHeatmap());
 
     pause(0.00001);
 end

@@ -17,5 +17,9 @@ classdef Frame
         function objs = getObjs(frame)
             objs = frame.objs;
         end
+
+        function objs = getObj(frame, i)
+            objs = frame.objs{i};
+        end
     end
 end
