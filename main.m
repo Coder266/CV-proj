@@ -18,6 +18,7 @@ subset_size = 30;
 background = get_background(src_path, subset_size);
 
 % params
+ex = 3;
 contrastTh = 0.25;
 minArea = 350;
 medianSize = 12;
@@ -27,6 +28,10 @@ heatmapSize = 100;
 debug = false;
 
 heatmap = Heatmap(sizex, sizey, heatmapSize);
+
+if ex == 3
+    markers = {};
+end
 
 objList = Frame.empty(1, 0);
 hiding = {};
@@ -228,13 +233,32 @@ for frame_idx=1:nimgs
     objList(frame_idx) = frame;
     
     % show img with rectangles
-    for i=1:length(frame.objs)
-        img = frame.getObj(i).drawRectangleImg(img);
-        heatmap = heatmap.addPos(frame.getObj(i).getPos());
+    if ex == 3
+        marker_pos = zeros(2, frame.getNumObjs());
     end
 
-    subplot(2,1,1), imshow(img);
-    subplot(2,1,2), imshow(heatmap.getHeatmap());
+    for i=1:frame.getNumObjs()
+        img = frame.getObj(i).drawRectangleImg(img, ex);
+        heatmap = heatmap.addPos(frame.getObj(i).getPos());
+        if ex == 3
+            obj_pos = frame.getObj(i).getPos();
+            pos = [obj_pos(1) + obj_pos(3) / 2, obj_pos(2) + obj_pos(4) / 2];
+            marker_pos(:, i) = pos;
+        end
+    end
 
-    pause(0.00001);
+    markers{frame_idx} = marker_pos;
+    
+    for i=frame_idx:-1:max(frame_idx - 6, 1)
+        for j=1:size(markers{i}, 2)
+            img = insertMarker(img, markers{i}(:, j)');
+        end
+    end
+    
+
+    imshow(img);
+%     subplot(2,1,1), imshow(img);
+%     subplot(2,1,2), imshow(heatmap.getHeatmap());
+
+    pause();
 end

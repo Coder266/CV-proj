@@ -60,10 +60,14 @@ classdef Group < ObjectInterface
             res = isempty(group.elements);
         end
 
-        function imgOut = drawRectangleImg(group, imgIn)
+        function img = drawRectangleImg(group, img, ex)
             ids = group.getId();
-            imgOut = insertShape(imgIn, 'Rectangle', group.posList(end, :));
-            imgOut = insertText(imgOut, [group.posList(end, 1) group.posList(end, 2)], int2str(ids));
+            if ismember(ex, [2, 3, 4])
+                img = insertShape(img, 'Rectangle', group.posList(end, :));
+            end
+            if ex == 4
+                img = insertTextex3(img, [group.posList(end, 1) group.posList(end, 2)], int2str(ids));
+            end
         end
     end
 end

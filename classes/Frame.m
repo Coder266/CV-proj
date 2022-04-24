@@ -21,5 +21,9 @@ classdef Frame
         function objs = getObj(frame, i)
             objs = frame.objs{i};
         end
+
+        function num = getNumObjs(frame)
+            num = length(frame.objs);
+        end
     end
 end
